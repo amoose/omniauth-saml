@@ -68,6 +68,16 @@ module OmniAuth
         fail!(:invalid_ticket, $!)
       rescue OneLogin::RubySaml::ValidationError
         fail!(:invalid_ticket, $!)
+      rescue REXML::ParseException
+        request.params['SAMLResponse'] = clean_newlines
+        retry
+      end
+
+      # remove newline characters if they're included in the SAMLResponse
+      def clean_newlines
+        if request.params['SAMLResponse'].include?('\\r\\n')
+          request.params['SAMLResponse'].gsub('\\r\\n', '')
+        end
       end
 
       # Obtain an idp certificate fingerprint from the response.
